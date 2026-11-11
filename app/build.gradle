@@ -13,14 +13,16 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
@@ -33,6 +35,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     //Card View
     implementation 'androidx.cardview:cardview:1.0.0'
-    //pdf library
-    implementation 'com.github.barteksc:android-pdf-viewer:2.8.2'
+    //pdf library (maintained fork of barteksc; same package name com.github.barteksc.pdfviewer)
+    implementation 'com.github.mhiew:android-pdf-viewer:3.2.0-beta.1'
 }
