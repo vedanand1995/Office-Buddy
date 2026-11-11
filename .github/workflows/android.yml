@@ -17,13 +17,16 @@ jobs:
       # The 2020-era Android Gradle Plugin cannot parse the package.xml format of
       # newer SDK platforms/build-tools preinstalled on the runner, so remove them
       # and install exactly what this project needs (SDK 29, build-tools 29.0.2).
-      # This step uses the runner's default JDK 17, which the modern sdkmanager needs.
+      # The pdf-viewer library bundles native libs, so an old NDK (r21) is installed
+      # for the strip-symbols task; the runner's NDK 30 lacks the old tool layout.
       - name: Prepare SDK for legacy AGP
         run: |
           rm -rf "$ANDROID_HOME/platforms"/android-3*
           rm -rf "$ANDROID_HOME/build-tools"/3*
+          rm -rf "$ANDROID_HOME/ndk"/*
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-29" "build-tools;29.0.2" > /dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-29" "build-tools;29.0.2" "ndk;21.4.7075529" > /dev/null
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.4.7075529" >> "$GITHUB_ENV"
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
 
