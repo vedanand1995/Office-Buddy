@@ -30,6 +30,7 @@ public class excelActivity extends AppCompatActivity {
     private excelAdapter obj_adapter;
     private final ArrayList<File> fileList = new ArrayList<>();   // instance, not static
     private static final int REQUEST_PERMISSION = 1;
+    private Thread scanThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,13 +59,34 @@ public class excelActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Scanning the whole storage tree is slow, so it runs on a background thread.
+     * Only the adapter update touches the UI thread.
+     */
     private void loadFiles() {
-        fileList.clear();                                          // never accumulate duplicates
-        fileList.addAll(FileScanner.scan(
-                android.os.Environment.getExternalStorageDirectory(),
-                f -> FileScanner.hasExtension(f, ".xlsx", ".xls")));
-        obj_adapter = new excelAdapter(getApplicationContext(), fileList);
-        listView.setAdapter(obj_adapter);
+        if (scanThread != null && scanThread.isAlive()) return;    // avoid parallel scans
+        final File dir = android.os.Environment.getExternalStorageDirectory();
+        final ArrayList<File> result = new ArrayList<>();
+        scanThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                result.addAll(FileScanner.scan(dir,
+                        f -> FileScanner.hasExtension(f, ".xlsx", ".xls")));
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        fileList.clear();
+                        fileList.addAll(result);
+                        obj_adapter = new excelAdapter(getApplicationContext(), fileList);
+                        listView.setAdapter(obj_adapter);
+                        if (fileList.isEmpty()) {
+                            Toast.makeText(excelActivity.this, "No documents found", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+            }
+        }, "file-scan");
+        scanThread.start();
     }
 
     private void openWithViewer(File file, String mime) {
@@ -78,6 +100,12 @@ public class excelActivity extends AppCompatActivity {
         } catch (ActivityNotFoundException e) {
             Toast.makeText(this, "No app installed that can open this file", Toast.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (scanThread != null) scanThread.interrupt();
     }
 
     @Override
