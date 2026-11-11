@@ -20,14 +20,6 @@ public class viewPdfActivity extends AppCompatActivity {
         PDFView pdfView = findViewById(R.id.pdfView);
 
         String path = getIntent().getStringExtra("path");
-        // Backwards compatibility with the old index-based extra
-        if (path == null) {
-            int position = getIntent().getIntExtra("position", -1);
-            if (position >= 0 && position < pdfActivity.fileList.size()) {
-                path = pdfActivity.fileList.get(position).getAbsolutePath();
-            }
-        }
-
         File file = path != null ? new File(path) : null;
         if (file == null || !file.exists()) {
             Toast.makeText(this, "File not found", Toast.LENGTH_SHORT).show();

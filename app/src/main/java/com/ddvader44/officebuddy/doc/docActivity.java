@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -36,13 +37,10 @@ public class docActivity extends AppCompatActivity {
         setContentView(R.layout.activity_doc);
         listView = findViewById(R.id.listView_doc);
 
-        listView.setOnItemClickListener((AdapterView<?> parent, android.view.View view, int position, long id) -> {
-            File file = fileList.get(position);                   // use the model, not toString()
-            if ("doc".equals("pdf")) {
-                Intent intent = new Intent(this, viewPdfActivity.class);
-                intent.putExtra("path", file.getAbsolutePath());  // pass the path, not the index
-                startActivity(intent);
-            } else {
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                File file = fileList.get(position);               // use the model, not toString()
                 openWithViewer(file, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
             }
         });
